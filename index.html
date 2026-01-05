@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ポケモン図鑑番号クイズ</title>
+<title>ポケモンタイムアタック</title>
 
 <style>
 body {
@@ -12,82 +12,52 @@ body {
   padding: 10px;
   background: #f5f5f5;
 }
-
 .container {
   max-width: 500px;
   margin: auto;
   background: white;
   padding: 15px;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
-
-h1 {
-  text-align: center;
-  font-size: 1.4em;
-}
-
 select, input, button {
   width: 100%;
   font-size: 1.1em;
   padding: 10px;
   margin: 8px 0;
 }
-
-#status {
-  text-align: center;
-  font-size: 1.2em;
-  margin: 10px 0;
-}
-
-#timer {
-  font-weight: bold;
-  color: red;
-}
-
-.hidden {
-  display: none;
-}
+#status { text-align:center; }
+#timer { color:red; font-weight:bold; }
+.hidden { display:none; }
 </style>
 </head>
 
 <body>
 <div class="container">
-  <h1>ポケモンタイムアタック</h1>
+<h1>ポケモン図鑑番号クイズ</h1>
 
-  <label>制限時間</label>
-  <select id="timeSelect">
-    <option value="0">制限時間なし</option>
-    <option value="1">1秒</option>
-    <option value="2">2秒</option>
-    <option value="3">3秒</option>
-    <option value="4">4秒</option>
-    <option value="5" selected>5秒</option>
-    <option value="6">6秒</option>
-    <option value="7">7秒</option>
-    <option value="8">8秒</option>
-    <option value="9">9秒</option>
-    <option value="10">10秒</option>
-  </select>
+<label>制限時間</label>
+<select id="timeSelect">
+  <option value="0">なし</option>
+  <option value="1">1秒</option>
+  <option value="2">2秒</option>
+  <option value="3">3秒</option>
+  <option value="5" selected>5秒</option>
+  <option value="10">10秒</option>
+</select>
 
-  <button onclick="startGame()">ゲーム開始</button>
+<button onclick="startGame()">スタート</button>
 
-  <div id="game" class="hidden">
-    <div id="status">
-      No.<span id="number"></span><br>
-      ⏱ <span id="timer"></span><br>
-      正解数：<span id="score">0</span><br>
-      最高記録：<span id="best">0</span>
-    </div>
-
-    <input
-      id="answer"
-      list="pokemonList"
-      placeholder="ポケモン名を入力"
-      autocomplete="off"
-    >
-    <datalist id="pokemonList"></datalist>
+<div id="game" class="hidden">
+  <div id="status">
+    No.<span id="number"></span><br>
+    ⏱ <span id="timer">∞</span><br>
+    正解数：<span id="score">0</span><br>
+    最高記録：<span id="best">0</span>
   </div>
+
+  <input id="answer" list="pokemonList" placeholder="ポケモン名を入力">
+  <datalist id="pokemonList"></datalist>
+</div>
 </div>
 
 <script>
@@ -99,31 +69,13 @@ let timeLeft = 0;
 let limit = 5;
 let score = 0;
 let best = localStorage.getItem("pokemon_best") || 0;
-
 document.getElementById("best").textContent = best;
 
 /* ===== ひらがな→カタカナ ===== */
 function hiraToKata(str) {
-  return str.replace(/[\u3041-\u3096]/g, ch =>
-    String.fromCharCode(ch.charCodeAt(0) + 0x60)
+  return str.replace(/[\u3041-\u3096]/g,
+    ch => String.fromCharCode(ch.charCodeAt(0) + 0x60)
   );
-}
-
-/* ===== 予測変換 ===== */
-function updateSuggestion(value) {
-  const list = document.getElementById("pokemonList");
-  list.innerHTML = "";
-  if (!value) return;
-
-  const kata = hiraToKata(value);
-  numbers.forEach(n => {
-    const name = pokemon[n];
-    if (name.startsWith(kata)) {
-      const option = document.createElement("option");
-      option.value = name;
-      list.appendChild(option);
-    }
-  });
 }
 
 /* ===== JSON読み込み ===== */
@@ -133,14 +85,14 @@ fetch("pokemon.json")
     pokemon = data;
     numbers = Object.keys(pokemon);
   })
-  .catch(() => alert("pokemon.json の読み込みに失敗しました"));
+  .catch(() => alert("pokemon.json 読み込み失敗"));
 
 /* ===== ゲーム開始 ===== */
 function startGame() {
   score = 0;
-  limit = Number(document.getElementById("timeSelect").value);
-  document.getElementById("score").textContent = score;
-  document.getElementById("game").classList.remove("hidden");
+  limit = Number(timeSelect.value);
+  scoreSpan.textContent = score;
+  game.classList.remove("hidden");
   nextQuestion();
 }
 
@@ -148,63 +100,77 @@ function startGame() {
 function nextQuestion() {
   clearInterval(timer);
 
+  currentNumber = numbers[Math.floor(Math.random() * numbers.length)];
+  number.textContent = currentNumber;
+
   if (limit === 0) {
-    document.getElementById("timer").textContent = "∞";
+    timerSpan.textContent = "∞";
   } else {
     timeLeft = limit;
-    document.getElementById("timer").textContent = timeLeft;
-
+    timerSpan.textContent = timeLeft;
     timer = setInterval(() => {
       timeLeft--;
-      document.getElementById("timer").textContent = timeLeft;
-      if (timeLeft <= 0) gameOver("時間切れ！");
+      timerSpan.textContent = timeLeft;
+      if (timeLeft <= 0) gameOver("時間切れ");
     }, 1000);
   }
 
-  currentNumber = numbers[Math.floor(Math.random() * numbers.length)];
-  document.getElementById("number").textContent = currentNumber;
-
-  const input = document.getElementById("answer");
-  input.value = "";
-  input.focus();
+  answer.value = "";
+  answer.focus();
 }
 
-/* ===== Enter判定 ===== */
-document.getElementById("answer").addEventListener("keydown", e => {
-  if (e.key === "Enter") checkAnswer();
+/* ===== 入力予測（ひらがな対応） ===== */
+answer.addEventListener("input", () => {
+  const text = hiraToKata(answer.value);
+  const list = pokemonList;
+  list.innerHTML = "";
+
+  numbers.forEach(n => {
+    if (pokemon[n].startsWith(text)) {
+      const o = document.createElement("option");
+      o.value = pokemon[n];
+      list.appendChild(o);
+    }
+  });
 });
 
-/* ===== 入力時予測変換 ===== */
-document.getElementById("answer").addEventListener("input", e => {
-  updateSuggestion(e.target.value);
+/* ===== Enter判定 ===== */
+answer.addEventListener("keydown", e => {
+  if (e.key === "Enter") checkAnswer();
 });
 
 /* ===== 判定 ===== */
 function checkAnswer() {
-  const input = document.getElementById("answer").value.trim();
-  if (input === pokemon[currentNumber]) {
+  if (answer.value === pokemon[currentNumber]) {
     score++;
-    document.getElementById("score").textContent = score;
+    scoreSpan.textContent = score;
     nextQuestion();
   } else {
-    gameOver("不正解！");
+    gameOver("不正解");
   }
 }
 
 /* ===== ゲームオーバー ===== */
-function gameOver(reason) {
+function gameOver(msg) {
   clearInterval(timer);
-
   if (score > best) {
     best = score;
     localStorage.setItem("pokemon_best", best);
   }
-
-  alert(`${reason}\nスコア：${score}\n最高記録：${best}`);
-  document.getElementById("best").textContent = best;
-  document.getElementById("game").classList.add("hidden");
+  alert(`${msg}\nスコア:${score}`);
+  bestSpan.textContent = best;
+  game.classList.add("hidden");
 }
+
+/* shortcut */
+const answer = document.getElementById("answer");
+const pokemonList = document.getElementById("pokemonList");
+const number = document.getElementById("number");
+const timerSpan = document.getElementById("timer");
+const scoreSpan = document.getElementById("score");
+const bestSpan = document.getElementById("best");
+const game = document.getElementById("game");
+const timeSelect = document.getElementById("timeSelect");
 </script>
 </body>
 </html>
-
