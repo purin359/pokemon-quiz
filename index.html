@@ -19,13 +19,14 @@ body {
   padding: 15px;
   border-radius: 10px;
 }
+h1 { text-align: center; font-size: 1.4em; }
 select, input, button {
   width: 100%;
   font-size: 1.1em;
   padding: 10px;
   margin: 8px 0;
 }
-#status { text-align: center; }
+#status { text-align: center; font-size: 1.1em; }
 #timer { color: red; font-weight: bold; }
 .hidden { display: none; }
 </style>
@@ -66,6 +67,7 @@ select, input, button {
 </div>
 
 <script>
+/* ===== 変数 ===== */
 let pokemon = {};
 let numbers = [];
 let currentNumber = null;
@@ -73,9 +75,8 @@ let timer = null;
 let timeLeft = 0;
 let limit = 5;
 let score = 0;
-let best = localStorage.getItem("pokemon_best") || 0;
 
-/* ===== DOM取得 ===== */
+/* ===== DOM ===== */
 const answer = document.getElementById("answer");
 const pokemonList = document.getElementById("pokemonList");
 const numberSpan = document.getElementById("number");
@@ -85,13 +86,19 @@ const bestSpan = document.getElementById("best");
 const game = document.getElementById("game");
 const timeSelect = document.getElementById("timeSelect");
 
-bestSpan.textContent = best;
-
 /* ===== ひらがな→カタカナ ===== */
 function hiraToKata(str) {
   return str.replace(/[\u3041-\u3096]/g, ch =>
     String.fromCharCode(ch.charCodeAt(0) + 0x60)
   );
+}
+
+/* ===== 最高記録 ===== */
+function getBest(limit) {
+  return Number(localStorage.getItem(`pokemon_best_${limit}`)) || 0;
+}
+function saveBest(limit, score) {
+  localStorage.setItem(`pokemon_best_${limit}`, score);
 }
 
 /* ===== JSON読み込み ===== */
@@ -100,14 +107,21 @@ fetch("pokemon.json")
   .then(data => {
     pokemon = data;
     numbers = Object.keys(pokemon);
+    bestSpan.textContent = getBest(Number(timeSelect.value));
   })
   .catch(() => alert("pokemon.json の読み込みに失敗しました"));
+
+/* ===== 制限時間変更時に最高記録更新 ===== */
+timeSelect.addEventListener("change", () => {
+  bestSpan.textContent = getBest(Number(timeSelect.value));
+});
 
 /* ===== ゲーム開始 ===== */
 function startGame() {
   score = 0;
   limit = Number(timeSelect.value);
   scoreSpan.textContent = score;
+  bestSpan.textContent = getBest(limit);
   game.classList.remove("hidden");
   nextQuestion();
 }
@@ -127,7 +141,9 @@ function nextQuestion() {
     timer = setInterval(() => {
       timeLeft--;
       timerSpan.textContent = timeLeft;
-      if (timeLeft <= 0) gameOver("時間切れ");
+      if (timeLeft <= 0) {
+        gameOver(`時間切れ！\n正解は「${pokemon[currentNumber]}」`);
+      }
     }, 1000);
   }
 
@@ -135,11 +151,9 @@ function nextQuestion() {
   answer.focus();
 }
 
-/* ===== 入力時：ひらがな→カタカナ + 予測 ===== */
+/* ===== 入力：カタカナ変換＋予測 ===== */
 answer.addEventListener("input", () => {
-  // ★ 入力文字を即カタカナに変換
   answer.value = hiraToKata(answer.value);
-
   pokemonList.innerHTML = "";
   if (!answer.value) return;
 
@@ -164,19 +178,19 @@ function checkAnswer() {
     scoreSpan.textContent = score;
     nextQuestion();
   } else {
-    gameOver("不正解");
+    gameOver(`不正解！\n正解は「${pokemon[currentNumber]}」`);
   }
 }
 
 /* ===== ゲームオーバー ===== */
 function gameOver(msg) {
   clearInterval(timer);
-  if (score > best) {
-    best = score;
-    localStorage.setItem("pokemon_best", best);
-  }
-  alert(`${msg}\nスコア：${score}`);
-  bestSpan.textContent = best;
+
+  const best = getBest(limit);
+  if (score > best) saveBest(limit, score);
+
+  alert(`${msg}\nスコア：${score}\n最高記録：${getBest(limit)}`);
+  bestSpan.textContent = getBest(limit);
   game.classList.add("hidden");
 }
 </script>
