@@ -155,7 +155,8 @@ function nextQuestion() {
     timer = setInterval(() => {
       timeLeft--;
       document.getElementById("timer").textContent = timeLeft;
-      if (timeLeft <= 0) gameOver("時間切れ！");
+      if (timeLeft <= 0) {
+        gameOver('時間切れ！\n正解は「${pokemon[currentNumber]}」');
     }, 1000);
   }
 
@@ -215,3 +216,4 @@ function gameOver(reason) {
 </script>
 </body>
 </html>
+
