@@ -58,16 +58,12 @@ select, input, button {
   <label>制限時間</label>
   <select id="timeSelect">
     <option value="0">制限時間なし</option>
-    <option value="1">1秒</option>
-    <option value="2">2秒</option>
-    <option value="3">3秒</option>
-    <option value="4">4秒</option>
     <option value="5" selected>5秒</option>
-    <option value="6">6秒</option>
-    <option value="7">7秒</option>
-    <option value="8">8秒</option>
-    <option value="9">9秒</option>
-    <option value="10">10秒</option>
+    <option value="10" selected>10秒</option>
+    <option value="20" selected>20秒</option>
+    <option value="30" selected>30秒</option>
+    <option value="45" selected>45秒</option>
+    <option value="60" selected>60秒</option>
   </select>
 
   <div id="status">
@@ -99,7 +95,7 @@ let numbers = [];
 let currentNumber = null;
 let timer = null;
 let timeLeft = 0;
-let limit = 5;
+let limit = 10;
 let score = 0;
 
 /* ===== 日本語正規化（完全対応） ===== */
@@ -219,4 +215,3 @@ function gameOver(reason) {
 </script>
 </body>
 </html>
-
