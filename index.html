@@ -55,8 +55,9 @@ select, input, button {
 <div class="container">
   <h1>ポケモンタイムアタック</h1>
 
-  <label>制限時間（秒）</label>
+  <label>制限時間</label>
   <select id="timeSelect">
+    <option value="0">制限時間なし</option>
     <option value="1">1秒</option>
     <option value="2">2秒</option>
     <option value="3">3秒</option>
@@ -74,7 +75,7 @@ select, input, button {
   <div id="game" class="hidden">
     <div id="status">
       No.<span id="number"></span><br>
-      ⏱ <span id="timer"></span>s<br>
+      ⏱ <span id="timer"></span><br>
       正解数：<span id="score">0</span><br>
       最高記録：<span id="best">0</span>
     </div>
@@ -108,14 +109,13 @@ function hiraToKata(str) {
   );
 }
 
-/* ===== 予測変換更新 ===== */
+/* ===== 予測変換 ===== */
 function updateSuggestion(value) {
   const list = document.getElementById("pokemonList");
   list.innerHTML = "";
   if (!value) return;
 
   const kata = hiraToKata(value);
-
   numbers.forEach(n => {
     const name = pokemon[n];
     if (name.startsWith(kata)) {
@@ -148,8 +148,18 @@ function startGame() {
 function nextQuestion() {
   clearInterval(timer);
 
-  timeLeft = limit;
-  document.getElementById("timer").textContent = timeLeft;
+  if (limit === 0) {
+    document.getElementById("timer").textContent = "∞";
+  } else {
+    timeLeft = limit;
+    document.getElementById("timer").textContent = timeLeft;
+
+    timer = setInterval(() => {
+      timeLeft--;
+      document.getElementById("timer").textContent = timeLeft;
+      if (timeLeft <= 0) gameOver("時間切れ！");
+    }, 1000);
+  }
 
   currentNumber = numbers[Math.floor(Math.random() * numbers.length)];
   document.getElementById("number").textContent = currentNumber;
@@ -157,20 +167,14 @@ function nextQuestion() {
   const input = document.getElementById("answer");
   input.value = "";
   input.focus();
-
-  timer = setInterval(() => {
-    timeLeft--;
-    document.getElementById("timer").textContent = timeLeft;
-    if (timeLeft <= 0) gameOver("時間切れ！");
-  }, 1000);
 }
 
-/* ===== Enterで判定 ===== */
+/* ===== Enter判定 ===== */
 document.getElementById("answer").addEventListener("keydown", e => {
   if (e.key === "Enter") checkAnswer();
 });
 
-/* ===== 入力時に予測変換 ===== */
+/* ===== 入力時予測変換 ===== */
 document.getElementById("answer").addEventListener("input", e => {
   updateSuggestion(e.target.value);
 });
