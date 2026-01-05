@@ -79,7 +79,12 @@ select, input, button {
       最高記録：<span id="best">0</span>
     </div>
 
-    <input id="answer" list="pokemonList" placeholder="ポケモン名を入力" autocomplete="off">
+    <input
+      id="answer"
+      list="pokemonList"
+      placeholder="ポケモン名を入力"
+      autocomplete="off"
+    >
     <datalist id="pokemonList"></datalist>
   </div>
 </div>
@@ -96,18 +101,37 @@ let best = localStorage.getItem("pokemon_best") || 0;
 
 document.getElementById("best").textContent = best;
 
+/* ===== ひらがな→カタカナ ===== */
+function hiraToKata(str) {
+  return str.replace(/[\u3041-\u3096]/g, ch =>
+    String.fromCharCode(ch.charCodeAt(0) + 0x60)
+  );
+}
+
+/* ===== 予測変換更新 ===== */
+function updateSuggestion(value) {
+  const list = document.getElementById("pokemonList");
+  list.innerHTML = "";
+  if (!value) return;
+
+  const kata = hiraToKata(value);
+
+  numbers.forEach(n => {
+    const name = pokemon[n];
+    if (name.startsWith(kata)) {
+      const option = document.createElement("option");
+      option.value = name;
+      list.appendChild(option);
+    }
+  });
+}
+
 /* ===== JSON読み込み ===== */
 fetch("pokemon.json")
   .then(r => r.json())
   .then(data => {
     pokemon = data;
     numbers = Object.keys(pokemon);
-    const list = document.getElementById("pokemonList");
-    numbers.forEach(n => {
-      const o = document.createElement("option");
-      o.value = pokemon[n];
-      list.appendChild(o);
-    });
   })
   .catch(() => alert("pokemon.json の読み込みに失敗しました"));
 
@@ -123,6 +147,7 @@ function startGame() {
 /* ===== 次の問題 ===== */
 function nextQuestion() {
   clearInterval(timer);
+
   timeLeft = limit;
   document.getElementById("timer").textContent = timeLeft;
 
@@ -140,11 +165,17 @@ function nextQuestion() {
   }, 1000);
 }
 
-/* ===== 判定 ===== */
+/* ===== Enterで判定 ===== */
 document.getElementById("answer").addEventListener("keydown", e => {
   if (e.key === "Enter") checkAnswer();
 });
 
+/* ===== 入力時に予測変換 ===== */
+document.getElementById("answer").addEventListener("input", e => {
+  updateSuggestion(e.target.value);
+});
+
+/* ===== 判定 ===== */
 function checkAnswer() {
   const input = document.getElementById("answer").value.trim();
   if (input === pokemon[currentNumber]) {
