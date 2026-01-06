@@ -16,6 +16,7 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
 .gen-container label { position:relative; padding-left:5px; display:block; height:25px; line-height:25px; }
 .gen-container input[type="checkbox"] { position:absolute; top:0; right:0; transform:scale(1.2); }
 .gen-note { font-size:0.9em; color:#555; margin-bottom:10px; }
+#message { text-align:center; font-size:1.1em; margin:10px 0; }
 </style>
 </head>
 <body>
@@ -73,7 +74,8 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
   <button onclick="checkAnswer()">判定</button>
   <button onclick="giveUp()">ギブアップ</button>
 </div>
-</div>
+
+<div id="message"></div>
 
 <script>
 let pokemon = {};
@@ -90,6 +92,7 @@ const timeSelect = document.getElementById("timeSelect");
 const bestContainer = document.getElementById("bestContainer");
 const modeSelect = document.getElementById("modeSelect");
 const genCheckboxes = document.querySelectorAll(".gen-container input[type='checkbox']");
+const messageDiv = document.getElementById("message");
 
 // 日本語正規化
 function normalizeJP(str){
@@ -163,13 +166,15 @@ function startGame(){
   limit=Number(timeSelect.value);
   document.getElementById("score").textContent=score;
   document.getElementById("game").classList.remove("hidden");
+  messageDiv.innerHTML = "";
   nextQuestion();
 }
 
 // 次の問題
 function nextQuestion(){
   clearInterval(timer);
-  const {nums, allChecked}=getSelectedNumbers();
+  messageDiv.innerHTML = ""; // 前のメッセージクリア
+  const {nums}=getSelectedNumbers();
   if(nums.length===0){ alert("世代を選択してください"); return; }
 
   if(limit===0) document.getElementById("timer").textContent="∞";
@@ -240,12 +245,11 @@ function gameOver(reason="時間切れ！"){
   }
 
   const correctAnswer = modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber;
-  let msg = reason + "\nスコア：" + score + "\n答えは「" + correctAnswer + "」";
-  if(allChecked) msg += "\n最高記録：" + bests.join(" / ");
+  messageDiv.innerHTML = `${reason}<br>スコア：${score}<br>答えは「${correctAnswer}」` +
+                         (allChecked ? `<br>最高記録：${bests.join(" / ")}` : "");
 
-  alert(msg);
-  updateBest();
   document.getElementById("game").classList.add("hidden");
+  updateBest();
 }
 </script>
 </body>
