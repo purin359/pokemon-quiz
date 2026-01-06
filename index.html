@@ -6,124 +6,75 @@
 <title>ポケモン図鑑番号検定</title>
 
 <style>
-body {
-  font-family: system-ui, sans-serif;
-  margin: 0;
-  padding: 10px;
-  background: #f5f5f5;
-}
-
-.container {
-  max-width: 500px;
-  margin: auto;
-  background: white;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-h1 { text-align: center; font-size: 1.4em; margin-bottom: 10px; }
-
-select, input, button {
-  width: 100%;
-  font-size: 1.1em;
-  padding: 10px;
-  margin: 8px 0;
-}
-
-#status { text-align: center; font-size: 1.1em; margin: 10px 0; }
-#timer { font-weight: bold; color: red; }
-
-.hidden { display: none; }
-
-/* 世代チェックボックス */
-.gen-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  padding: 5px;
-  border-radius: 5px;
-}
-
-.gen-container label {
-  position: relative;
-  padding-left: 5px;
-  display: block;
-  height: 25px;
-  line-height: 25px;
-}
-
-.gen-container input[type="checkbox"] {
-  position: absolute;
-  top: 0;
-  right: 0;
-  transform: scale(1.2);
-}
-
-.gen-note { font-size: 0.9em; color: #555; margin-bottom: 10px; }
+body { font-family: system-ui, sans-serif; margin:0; padding:10px; background:#f5f5f5; }
+.container { max-width:500px; margin:auto; background:white; padding:15px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+h1 { text-align:center; font-size:1.4em; margin-bottom:10px; }
+select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0; }
+#status { text-align:center; font-size:1.1em; margin:10px 0; }
+#timer { font-weight:bold; color:red; }
+.hidden { display:none; }
+.gen-container { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin:10px 0; border:1px solid #ccc; padding:5px; border-radius:5px; }
+.gen-container label { position:relative; padding-left:5px; display:block; height:25px; line-height:25px; }
+.gen-container input[type="checkbox"] { position:absolute; top:0; right:0; transform:scale(1.2); }
+.gen-note { font-size:0.9em; color:#555; margin-bottom:10px; }
 </style>
 </head>
 
 <body>
 <div class="container">
-  <h1>ポケモン図鑑番号検定</h1>
+<h1>ポケモン図鑑番号検定</h1>
 
-  <!-- モード選択 -->
-  <label>モード選択</label>
-  <select id="modeSelect">
-    <option value="num2poke" selected>番号→ポケモン</option>
-    <option value="poke2num">ポケモン→番号</option>
-  </select>
+<label>モード選択</label>
+<select id="modeSelect">
+  <option value="num2poke" selected>番号→ポケモン</option>
+  <option value="poke2num">ポケモン→番号</option>
+</select>
 
-  <!-- 制限時間 -->
-  <label>制限時間</label>
-  <select id="timeSelect">
-    <option value="0">制限時間なし</option>
-    <option value="5">5秒</option>
-    <option value="10">10秒</option>
-    <option value="20">20秒</option>
-    <option value="30" selected>30秒</option>
-    <option value="45">45秒</option>
-    <option value="60">60秒</option>
-  </select>
+<label>制限時間</label>
+<select id="timeSelect">
+  <option value="0">制限時間なし</option>
+  <option value="5">5秒</option>
+  <option value="10">10秒</option>
+  <option value="20">20秒</option>
+  <option value="30" selected>30秒</option>
+  <option value="45">45秒</option>
+  <option value="60">60秒</option>
+</select>
 
-  <!-- 世代チェック -->
-  <label>世代選択</label>
-  <div class="gen-container">
-    <label><input type="checkbox" value="all" checked> 全て</label>
-    <label><input type="checkbox" value="kanto" checked> カントー</label>
-    <label><input type="checkbox" value="johto" checked> ジョウト</label>
-    <label><input type="checkbox" value="hoenn" checked> ホウエン</label>
-    <label><input type="checkbox" value="sinnoh" checked> シンオウ</label>
-    <label><input type="checkbox" value="unova" checked> イッシュ</label>
-    <label><input type="checkbox" value="kalos" checked> カロス</label>
-    <label><input type="checkbox" value="alola" checked> アローラ</label>
-    <label><input type="checkbox" value="galar" checked> ガラル</label>
-    <label><input type="checkbox" value="paldea" checked> パルデア</label>
+<label>世代選択</label>
+<div class="gen-container">
+  <label><input type="checkbox" value="all" checked> 全て</label>
+  <label><input type="checkbox" value="kanto" checked> カントー</label>
+  <label><input type="checkbox" value="johto" checked> ジョウト</label>
+  <label><input type="checkbox" value="hoenn" checked> ホウエン</label>
+  <label><input type="checkbox" value="sinnoh" checked> シンオウ</label>
+  <label><input type="checkbox" value="unova" checked> イッシュ</label>
+  <label><input type="checkbox" value="kalos" checked> カロス</label>
+  <label><input type="checkbox" value="alola" checked> アローラ</label>
+  <label><input type="checkbox" value="galar" checked> ガラル</label>
+  <label><input type="checkbox" value="paldea" checked> パルデア</label>
+</div>
+<div class="gen-note">※メルタン→アローラ　ヒスイ→ガラル</div>
+
+<div id="bestContainer">
+  この時間の最高記録（1位～3位）：<span id="best">0</span>
+</div>
+
+<button onclick="startGame()">ゲーム開始</button>
+
+<div id="game" class="hidden">
+  <div id="status">
+    出題：<span id="number"></span><br>
+    ⏱ <span id="timer"></span><br>
+    正解数：<span id="score">0</span>
   </div>
-  <div class="gen-note">※メルタン→アローラ　ヒスイ→ガラル</div>
 
-  <div id="bestContainer">
-    この時間の最高記録（1位～3位）：<span id="best">0</span>
-  </div>
+  <input id="answer" list="pokemonList" placeholder="答えを入力" autocomplete="off">
+  <datalist id="pokemonList"></datalist>
 
-  <button onclick="startGame()">ゲーム開始</button>
-
-  <div id="game" class="hidden">
-    <div id="status">
-      出題：<span id="number"></span><br>
-      ⏱ <span id="timer"></span><br>
-      正解数：<span id="score">0</span>
-    </div>
-
-    <input id="answer" list="pokemonList" placeholder="答えを入力" autocomplete="off">
-    <datalist id="pokemonList"></datalist>
-
-    <button onclick="checkAnswer()">判定</button>
-    <button onclick="giveUp()">ギブアップ</button>
-  </div>
+  <button onclick="checkAnswer()">判定</button>
+  <button onclick="giveUp()">ギブアップ</button>
+</div>
 </div>
 
 <script>
@@ -153,14 +104,14 @@ const genRanges = {
   unova:[494,649], kalos:[650,721], alola:[722,809], galar:[810,906], paldea:[907,1025]
 };
 
-// 選択世代の番号取得
+// 選択世代番号取得
 function getSelectedNumbers(){
-  let selected = [];
-  let allChecked = true;
+  let selected=[];
+  let allChecked=true;
   genCheckboxes.forEach(cb=>{
     if(cb.value!=='all' && cb.checked){
-      const [start,end]=genRanges[cb.value]||[1,1025];
-      for(let i=start;i<=end;i++) selected.push(i);
+      const [s,e]=genRanges[cb.value]||[1,1025];
+      for(let i=s;i<=e;i++) selected.push(i);
     }
     if(cb.value!=='all' && !cb.checked) allChecked=false;
   });
@@ -168,32 +119,29 @@ function getSelectedNumbers(){
 }
 
 // 最高記録キー
-function bestKey(){
-  return `pokemon_best_${modeSelect.value}_${limit}`;
-}
+function bestKey(){ return `pokemon_best_${modeSelect.value}_${limit}`; }
 
 // JSON読み込み
-fetch("pokemon.json")
-  .then(r=>r.json())
-  .then(data=>{pokemon=data; numbers=Object.keys(pokemon).map(Number); updateBest();})
-  .catch(()=>alert("pokemon.json の読み込みに失敗しました"));
+fetch("pokemon.json").then(r=>r.json()).then(data=>{
+  pokemon=data;
+  numbers=Object.keys(pokemon).map(Number);
+  updateBest();
+}).catch(()=>alert("pokemon.json の読み込みに失敗しました"));
 
 // 最高記録表示
 function updateBest(){
   const {allChecked} = getSelectedNumbers();
   if(!allChecked){bestContainer.style.display="none"; return;}
   bestContainer.style.display="block";
-  const bests = JSON.parse(localStorage.getItem(bestKey())||"[0,0,0]");
-  bestContainer.querySelector("#best").textContent = bests.join(" / ");
+  const bests=JSON.parse(localStorage.getItem(bestKey())||"[0,0,0]");
+  bestContainer.querySelector("#best").textContent=bests.join(" / ");
 }
 
-// 世代チェックボックスの制御（スマホ対応）
+// 世代チェックトグル（スマホ対応）
 genCheckboxes.forEach(cb=>{
   cb.addEventListener("click", toggleAll);
-  cb.addEventListener("change", toggleAll);
 });
-
-function toggleAll(){
+function toggleAll(e){
   const allCb = Array.from(genCheckboxes).find(c=>c.value==='all');
   if(this.value==='all'){
     const {nums} = getSelectedNumbers();
@@ -201,7 +149,7 @@ function toggleAll(){
     else{ genCheckboxes.forEach(c=>c.checked=true); }
   } else {
     const {allChecked} = getSelectedNumbers();
-    allCb.checked = allChecked;
+    allCb.checked=allChecked;
   }
   updateBest();
 }
@@ -219,7 +167,7 @@ function startGame(){
 function nextQuestion(){
   clearInterval(timer);
   const {nums, allChecked}=getSelectedNumbers();
-  if(nums.length===0){ alert("世代を選択してください"); return;}
+  if(nums.length===0){ alert("世代を選択してください"); return; }
 
   if(limit===0) document.getElementById("timer").textContent="∞";
   else{
@@ -228,7 +176,7 @@ function nextQuestion(){
     timer=setInterval(()=>{
       timeLeft--;
       document.getElementById("timer").textContent=timeLeft;
-      if(timeLeft<=0) gameOver(true);
+      if(timeLeft<=0) gameOver(true,true);
     },1000);
   }
 
@@ -241,7 +189,7 @@ function nextQuestion(){
 }
 
 // Enter判定
-answer.addEventListener("keydown", e=>{if(e.key==="Enter") checkAnswer();});
+answer.addEventListener("keydown", e=>{ if(e.key==="Enter") checkAnswer(); });
 
 // 予測変換
 answer.addEventListener("input", ()=>{
@@ -260,26 +208,23 @@ answer.addEventListener("input", ()=>{
 function checkAnswer(){
   clearInterval(timer);
   const input=normalizeJP(answer.value.trim());
-  let correct;
-  if(modeSelect.value==="num2poke") correct=normalizeJP(pokemon[currentNumber]);
-  else correct=String(currentNumber);
-
+  let correct = modeSelect.value==="num2poke"?normalizeJP(pokemon[currentNumber]):String(currentNumber);
   if(input===correct){
     score++;
     document.getElementById("score").textContent=score;
     nextQuestion();
-  }else{
-    gameOver(false, `不正解！\n正解は「${modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber}」`);
+  } else{
+    gameOver(false,true,`不正解！\n正解は「${modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber}」`);
   }
 }
 
 // ギブアップ
 function giveUp(){
-  gameOver(false, `ギブアップ！\n正解は「${modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber}」`);
+  gameOver(false,true,`ギブアップ！\n正解は「${modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber}」`);
 }
 
 // ゲームオーバー
-function gameOver(timeOut=false, reason="時間切れ！"){
+function gameOver(timeOut=false,showAnswer=false,reason="時間切れ！"){
   clearInterval(timer);
   const {allChecked} = getSelectedNumbers();
   let bests=[0,0,0];
@@ -290,7 +235,12 @@ function gameOver(timeOut=false, reason="時間切れ！"){
     else if(score>bests[2]){bests[2]=score;}
     localStorage.setItem(bestKey(), JSON.stringify(bests));
   }
-  alert(`${reason}\nスコア：${score}${allChecked?`\n最高記録：${bests.join(" / ")}`:""}`);
+  let msg=reason+"\nスコア："+score;
+  if(showAnswer){
+    msg+="\n正解："+(modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber);
+  }
+  if(allChecked) msg+="\n最高記録："+bests.join(" / ");
+  alert(msg);
   updateBest();
   document.getElementById("game").classList.add("hidden");
 }
