@@ -12,14 +12,10 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
 #status { text-align:center; font-size:1.1em; margin:10px 0; }
 #timer { font-weight:bold; color:red; }
 .hidden { display:none; }
-
 .gen-container { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin:10px 0; border:1px solid #ccc; padding:5px; border-radius:5px; }
 .gen-container label { position:relative; padding-left:5px; display:block; height:25px; line-height:25px; }
 .gen-container input[type="checkbox"] { position:absolute; top:0; right:0; transform:scale(1.2); }
 .gen-note { font-size:0.9em; color:#555; margin-bottom:10px; }
-
-#message { text-align:center; font-size:1.1em; margin:10px 0; white-space: pre-line; }
-.answer-red { color:red; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -71,8 +67,6 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
     正解数：<span id="score">0</span>
   </div>
 
-  <div id="message"></div>
-
   <input id="answer" list="pokemonList" placeholder="答えを入力" autocomplete="off">
   <datalist id="pokemonList"></datalist>
 
@@ -96,7 +90,6 @@ const timeSelect = document.getElementById("timeSelect");
 const bestContainer = document.getElementById("bestContainer");
 const modeSelect = document.getElementById("modeSelect");
 const genCheckboxes = document.querySelectorAll(".gen-container input[type='checkbox']");
-const messageDiv = document.getElementById("message");
 
 // 日本語正規化
 function normalizeJP(str){
@@ -167,7 +160,6 @@ function toggleAll(e){
 // ゲーム開始
 function startGame(){
   score=0;
-  messageDiv.textContent="";
   limit=Number(timeSelect.value);
   document.getElementById("score").textContent=score;
   document.getElementById("game").classList.remove("hidden");
@@ -177,7 +169,6 @@ function startGame(){
 // 次の問題
 function nextQuestion(){
   clearInterval(timer);
-  messageDiv.textContent="";
   const {nums, allChecked}=getSelectedNumbers();
   if(nums.length===0){ alert("世代を選択してください"); return; }
 
@@ -250,14 +241,11 @@ function gameOver(reason="時間切れ！"){
 
   const correctAnswer = modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber;
   let msg = reason + "\nスコア：" + score + "\n答えは「" + correctAnswer + "」";
-
   if(allChecked) msg += "\n最高記録：" + bests.join(" / ");
-  
-  // 赤文字表示
-  messageDiv.innerHTML = msg.replace("答えは「" + correctAnswer + "」", `<span class="answer-red">答えは「${correctAnswer}」</span>`);
 
-  document.getElementById("game").classList.add("hidden");
+  alert(msg);
   updateBest();
+  document.getElementById("game").classList.add("hidden");
 }
 </script>
 </body>
