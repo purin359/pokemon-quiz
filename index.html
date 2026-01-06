@@ -92,6 +92,8 @@ select, input, button {
   </select>
 
   <!-- 世代チェック -->
+  <label>世代選択%d
+  ※メルタン→アローラ、ヒスイ→ガラル</label>
   <div class="gen-container">
     <label><input type="checkbox" value="all" checked> 全て</label>
     <label><input type="checkbox" value="kanto" checked> カントー</label>
@@ -100,8 +102,8 @@ select, input, button {
     <label><input type="checkbox" value="sinnoh" checked> シンオウ</label>
     <label><input type="checkbox" value="unova" checked> イッシュ</label>
     <label><input type="checkbox" value="kalos" checked> カロス</label>
-    <label><input type="checkbox" value="alola" checked> アローラ+メルタン</label>
-    <label><input type="checkbox" value="galar" checked> ガラル+ヒスイ</label>
+    <label><input type="checkbox" value="alola" checked> アローラ</label>
+    <label><input type="checkbox" value="galar" checked> ガラル</label>
     <label><input type="checkbox" value="paldea" checked> パルデア</label>
   </div>
 
@@ -300,4 +302,5 @@ function gameOver(timeOut=false, reason="時間切れ！"){
 </script>
 </body>
 </html>
+
 
