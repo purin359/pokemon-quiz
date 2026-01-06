@@ -73,10 +73,11 @@ select, input, button {
   <h1>ポケモン図鑑番号検定</h1>
 
   <!-- モード切替 -->
-  <div class="mode-selector">
-    <label><input type="radio" name="mode" value="numToName" checked> 番号→ポケモン</label>
-    <label><input type="radio" name="mode" value="nameToNum"> ポケモン→番号</label>
-  </div>
+  <label>モード選択</label>
+  <select id="modeSelect">
+    <option value="num2poke">番号→ポケモン</option>
+    <option value="poke2num">ポケモン→番号</option>
+  </select>
 
   <!-- 制限時間 -->
   <label>制限時間</label>
@@ -299,3 +300,4 @@ function gameOver(timeOut=false, reason="時間切れ！"){
 </script>
 </body>
 </html>
+
