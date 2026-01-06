@@ -222,13 +222,12 @@ function checkAnswer(){
     document.getElementById("score").textContent=score;
     nextQuestion();
   } else{
-    gameOver(false,true,`不正解！\n正解は「${modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber}」`);
-  }
+    gameOver(false,true,`不正解！
 }
 
 // ギブアップ
 function giveUp(){
-  gameOver(false,true,`ギブアップ！\n正解は「${modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber}」`);
+  gameOver(false,true,`ギブアップ！
 }
 
 // ゲームオーバー
@@ -245,7 +244,7 @@ function gameOver(timeOut=false,showAnswer=false,reason="時間切れ！"){
   }
   let msg=reason+"\nスコア："+score;
   if(showAnswer){
-    msg+="\n正解："+(modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber);
+    msg+="\n正解は"+(modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber)+"」";
   }
   if(allChecked) msg+="\n最高記録："+bests.join(" / ");
   alert(msg);
@@ -255,3 +254,4 @@ function gameOver(timeOut=false,showAnswer=false,reason="時間切れ！"){
 </script>
 </body>
 </html>
+
