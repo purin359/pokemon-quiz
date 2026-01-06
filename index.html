@@ -13,8 +13,6 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
 #timer { font-weight:bold; color:red; }
 .hidden { display:none;}
 #ranking { font-size:0.95em; margin:5px 0; text-align:left; }
-#generations { text-align:left; margin:10px 0;}
-#generations label { display:block; }
 </style>
 </head>
 
@@ -39,18 +37,18 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
   <option value="60">60秒</option>
 </select>
 
-<div id="generations">
-  <label><input type="checkbox" class="gen" value="1-151" checked> カントー</label>
-  <label><input type="checkbox" class="gen" value="152-251" checked> ジョウト</label>
-  <label><input type="checkbox" class="gen" value="252-386" checked> ホウエン</label>
-  <label><input type="checkbox" class="gen" value="387-493" checked> シンオウ</label>
-  <label><input type="checkbox" class="gen" value="494-649" checked> イッシュ</label>
-  <label><input type="checkbox" class="gen" value="650-721" checked> カロス</label>
-  <label><input type="checkbox" class="gen" value="722-809" checked> アローラ+メルタン</label>
-  <label><input type="checkbox" class="gen" value="810-906" checked> ガラル+ヒスイ</label>
-  <label><input type="checkbox" class="gen" value="907-1025" checked> パルデア</label>
-  <label><input type="checkbox" id="selectAll" checked> 全て選択</label>
-</div>
+<label>世代選択（複数選択可）</label>
+<select id="generationSelect" multiple size="6">
+  <option value="1-151" selected>カントー</option>
+  <option value="152-251" selected>ジョウト</option>
+  <option value="252-386" selected>ホウエン</option>
+  <option value="387-493" selected>シンオウ</option>
+  <option value="494-649" selected>イッシュ</option>
+  <option value="650-721" selected>カロス</option>
+  <option value="722-809" selected>アローラ+メルタン</option>
+  <option value="810-906" selected>ガラル+ヒスイ</option>
+  <option value="907-1025" selected>パルデア</option>
+</select>
 
 <div id="status">
   この時間の最高記録（1位～3位）：<div id="ranking">---</div>
@@ -90,8 +88,7 @@ const timeSelect = document.getElementById("timeSelect");
 const modeSelect = document.getElementById("modeSelect");
 const rankingDiv = document.getElementById("ranking");
 const promptSpan = document.getElementById("prompt");
-const genCheckboxes = document.querySelectorAll(".gen");
-const selectAll = document.getElementById("selectAll");
+const generationSelect = document.getElementById("generationSelect");
 
 // ----- 正規化 -----
 function normalizeJP(str){
@@ -111,11 +108,8 @@ fetch("pokemon.json")
 
 // ----- 最高記録表示 -----
 function updateBest(){
-  const allChecked = Array.from(genCheckboxes).every(ch=>ch.checked);
-  if(!allChecked){
-    rankingDiv.innerHTML="---";
-    return;
-  }
+  const allSelected = generationSelect.selectedOptions.length === generationSelect.options.length;
+  if(!allSelected){ rankingDiv.innerHTML="---"; return; }
   const key = bestKey();
   let top = JSON.parse(localStorage.getItem(key)||"[]");
   if(top.length===0){ rankingDiv.innerHTML="---"; }
@@ -125,20 +119,7 @@ function updateBest(){
 // ----- モード・時間変更 -----
 modeSelect.addEventListener("change",()=>{ mode=modeSelect.value; updateBest(); });
 timeSelect.addEventListener("change",()=>{ limit=Number(timeSelect.value); updateBest(); });
-
-// ----- 世代チェックボックス制御 -----
-selectAll.addEventListener("change",()=>{
-  genCheckboxes.forEach(ch=>ch.checked=selectAll.checked);
-  updateBest();
-});
-
-genCheckboxes.forEach(ch=>{
-  ch.addEventListener("change",()=>{
-    const all = Array.from(genCheckboxes).every(c=>c.checked);
-    selectAll.checked=all;
-    updateBest();
-  });
-});
+generationSelect.addEventListener("change",()=>{ updateBest(); });
 
 // ----- ゲーム開始 -----
 function startGame(){
@@ -151,10 +132,10 @@ function startGame(){
 
 // ----- 出題範囲取得 -----
 function getRangeNumbers(){
-  const selected = Array.from(genCheckboxes).filter(ch=>ch.checked);
+  const selected = Array.from(generationSelect.selectedOptions);
   let ranges = [];
-  selected.forEach(ch=>{
-    const [s,e]=ch.value.split("-").map(Number);
+  selected.forEach(opt=>{
+    const [s,e]=opt.value.split("-").map(Number);
     for(let i=s;i<=e;i++) ranges.push(String(i));
   });
   return ranges;
@@ -222,8 +203,8 @@ function giveUp(){ gameOver(`ギブアップ！\n正解は「${getCorrectAnswer(
 function gameOver(reason){
   clearInterval(timer);
 
-  const allChecked = Array.from(genCheckboxes).every(ch=>ch.checked);
-  if(allChecked){
+  const allSelected = generationSelect.selectedOptions.length === generationSelect.options.length;
+  if(allSelected){
     const key = bestKey();
     let top = JSON.parse(localStorage.getItem(key)||"[]");
     top.push(score);
