@@ -49,15 +49,15 @@ select, input, button {
 
 .gen-container label {
   position: relative;
-  padding-left: 5px;
   display: block;
   height: 25px;
   line-height: 25px;
+  padding-left: 5px;
 }
 
 .gen-container input[type="checkbox"] {
   position: absolute;
-  top: 0;
+  bottom: 0;
   right: 0;
   transform: scale(1.2);
 }
@@ -132,7 +132,7 @@ let numbers = [];
 let currentNumber = null;
 let timer = null;
 let timeLeft = 0;
-let limit = 30; // 初期値30秒
+let limit = 30;
 let score = 0;
 
 const answer = document.getElementById("answer");
@@ -187,12 +187,19 @@ function updateBest(){
   bestContainer.querySelector("#best").textContent = bests.join(" / ");
 }
 
-// 世代チェックボックスの制御
-genCheckboxes.forEach(cb=>{
-  cb.addEventListener("change",()=>{
+// 世代チェックボックス制御（トグル式全て）
+genCheckboxes.forEach(cb => {
+  cb.addEventListener("change", () => {
     if(cb.value==='all'){
-      // 全てのチェックを外す
-      genCheckboxes.forEach(c=>c.checked=false);
+      const anyChecked = Array.from(genCheckboxes).some(c => c.value!=='all' && c.checked);
+      const newState = !anyChecked;
+      genCheckboxes.forEach(c=>{ if(c.value!=='all') c.checked = newState; });
+      cb.checked = newState;
+    } else {
+      // 個別が変わった場合は全てのチェック状態を確認して「全て」ボックスを同期
+      const allCB = Array.from(genCheckboxes).find(c=>c.value==='all');
+      const {allChecked} = getSelectedNumbers();
+      allCB.checked = allChecked;
     }
     updateBest();
   });
