@@ -16,7 +16,7 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
 .gen-container label { position:relative; padding-left:5px; display:block; height:25px; line-height:25px; }
 .gen-container input[type="checkbox"] { position:absolute; top:0; right:0; transform:scale(1.2); }
 .gen-note { font-size:0.9em; color:#555; margin-bottom:10px; }
-#message { text-align:center; font-size:1.1em; margin:10px 0; color:red; white-space:pre-line; }
+#message { margin:10px 0; white-space:pre-wrap; font-size:1.05em; }
 </style>
 </head>
 <body>
@@ -59,6 +59,8 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
   この時間の最高記録（1位～3位）：<span id="best">0</span>
 </div>
 
+<!-- リザルト表示をゲーム開始ボタンの上に配置 -->
+<div id="message"></div>
 <button onclick="startGame()">ゲーム開始</button>
 
 <div id="game" class="hidden">
@@ -74,8 +76,7 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
   <button onclick="checkAnswer()">判定</button>
   <button onclick="giveUp()">ギブアップ</button>
 </div>
-
-<div id="message"></div>
+</div>
 
 <script>
 let pokemon = {};
@@ -147,9 +148,12 @@ function toggleAll(){
   setTimeout(()=>{
     if(this.value==='all'){
       const anyChecked = Array.from(genCheckboxes).some(c=>c.value!=='all' && c.checked);
-      if(anyChecked) genCheckboxes.forEach(c=>c.checked=false);
-      else genCheckboxes.forEach(c=>c.checked=true);
-    } else {
+      if(anyChecked){
+        genCheckboxes.forEach(c=>c.checked=false);
+      } else{
+        genCheckboxes.forEach(c=>c.checked=true);
+      }
+    } else{
       const allSelected = Array.from(genCheckboxes).filter(c=>c.value!=='all').every(c=>c.checked);
       allCb.checked=allSelected;
     }
@@ -163,14 +167,13 @@ function startGame(){
   limit=Number(timeSelect.value);
   document.getElementById("score").textContent=score;
   document.getElementById("game").classList.remove("hidden");
-  messageDiv.textContent="";
+  messageDiv.textContent=""; // 前回の結果をクリア
   nextQuestion();
 }
 
 // 次の問題
 function nextQuestion(){
   clearInterval(timer);
-  messageDiv.textContent="";
   const {nums, allChecked}=getSelectedNumbers();
   if(nums.length===0){ alert("世代を選択してください"); return; }
 
@@ -196,14 +199,20 @@ function nextQuestion(){
 // Enter判定
 answer.addEventListener("keydown", e=>{ if(e.key==="Enter") checkAnswer(); });
 
-// 予測変換
+// 予測変換（iOS対応）
+let lastInputText = "";
 answer.addEventListener("input", ()=>{
-  const text=normalizeJP(answer.value);
-  pokemonList.innerHTML="";
+  const text = normalizeJP(answer.value);
+  if(text === lastInputText) return; // 前回と同じなら処理しない
+  lastInputText = text;
+
+  // datalist を安全にクリア
+  while(pokemonList.firstChild) pokemonList.removeChild(pokemonList.firstChild);
+
   numbers.forEach(n=>{
     if(pokemon[n] && normalizeJP(pokemon[n]).startsWith(text)){
-      const o=document.createElement("option");
-      o.value=pokemon[n];
+      const o = document.createElement("option");
+      o.value = pokemon[n];
       pokemonList.appendChild(o);
     }
   });
@@ -218,7 +227,9 @@ function checkAnswer(){
     score++;
     document.getElementById("score").textContent = score;
     nextQuestion();
-  } else gameOver("不正解！");
+  } else{
+    gameOver("不正解！");
+  }
 }
 
 // ギブアップ
@@ -227,10 +238,8 @@ function giveUp(){
 }
 
 // ゲームオーバー
-function gameOver(reason="時間切れ！"){
+function gameOver(reason){
   clearInterval(timer);
-  answer.blur(); // フォーカス解除（スマホ対応）
-
   const {allChecked} = getSelectedNumbers();
   let bests=[0,0,0];
   if(allChecked){
@@ -242,12 +251,12 @@ function gameOver(reason="時間切れ！"){
   }
 
   const correctAnswer = modeSelect.value==="num2poke"?pokemon[currentNumber]:currentNumber;
-  let msg = `${reason}\nスコア：${score}\n答えは「${correctAnswer}」`;
-  if(allChecked) msg += `\n最高記録：${bests.join(" / ")}`;
+  let msg = reason + "\nスコア：" + score + "\n答えは「" + correctAnswer + "」";
+  if(allChecked) msg += "\n最高記録：" + bests.join(" / ");
 
   messageDiv.textContent = msg;
-  document.getElementById("game").classList.add("hidden");
   updateBest();
+  document.getElementById("game").classList.add("hidden");
 }
 </script>
 </body>
