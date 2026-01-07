@@ -2,199 +2,280 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ポケモン図鑑番号検定</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body { font-family: system-ui, sans-serif; margin:0; padding:10px; background:#f5f5f5; }
-.container { max-width:500px; margin:auto; background:#fff; padding:15px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,.1); }
-h1 { text-align:center; font-size:1.4em; }
-select, input, button { width:100%; font-size:1.05em; padding:10px; margin:8px 0; }
-.hidden { display:none; }
-#timer { color:red; font-weight:bold; }
-.gen-container { display:grid; grid-template-columns:1fr 1fr; gap:5px; border:1px solid #ccc; padding:5px; border-radius:5px; }
-.gen-container label { position:relative; padding-left:5px; height:26px; line-height:26px; }
-.gen-container input { position:absolute; right:5px; top:4px; transform:scale(1.2); }
-#message { white-space:pre-wrap; margin:10px 0; }
-.record { font-size:.95em; border-top:1px solid #ccc; padding-top:5px; margin-top:5px; }
+body {
+  font-family: sans-serif;
+  padding: 10px;
+}
+
+h1 {
+  font-size: 20px;
+}
+
+button, select {
+  font-size: 16px;
+  padding: 6px;
+  margin: 4px 0;
+}
+
+#gameArea {
+  margin-top: 10px;
+}
+
+#question {
+  font-size: 22px;
+  margin: 10px 0;
+}
+
+input[type="text"] {
+  font-size: 18px;
+  width: 100%;
+  padding: 6px;
+}
+
+#message {
+  margin: 8px 0;
+  min-height: 1.5em;
+}
+
+#timer {
+  margin: 6px 0;
+}
+
+#result {
+  margin: 10px 0;
+}
+
+.generations {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.gen-box {
+  border: 1px solid #aaa;
+  padding: 6px;
+  position: relative;
+  min-height: 40px;
+}
+
+.gen-box span {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.gen-box input {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  transform: scale(1.3);
+}
 </style>
 </head>
 
 <body>
-<div class="container">
+
 <h1>ポケモン図鑑番号検定</h1>
 
-<label>ルール</label>
-<select id="rule">
-  <option value="endless">エンドレス</option>
-  <option value="timeattack">タイムアタック</option>
-</select>
-
-<label>モード</label>
+<label>モード選択</label>
 <select id="mode">
-  <option value="num2poke">番号→ポケモン</option>
-  <option value="poke2num">ポケモン→番号</option>
+  <option value="name">番号→ポケモン</option>
+  <option value="number">ポケモン→番号</option>
 </select>
 
-<label id="timeLabel">制限時間</label>
-<select id="timeSelect">
-  <option value="0">制限なし</option>
+<label>ルール選択</label>
+<select id="rule">
+  <option value="time">タイムアタック</option>
+  <option value="endless">エンドレス</option>
+</select>
+
+<label>時間選択</label>
+<select id="timeLimit">
   <option value="3">3秒</option>
   <option value="5">5秒</option>
   <option value="10">10秒</option>
   <option value="20">20秒</option>
-  <option value="30" selected>30秒</option>
+  <option value="30">30秒</option>
+  <option value="60">60秒</option>
 </select>
 
-<label>世代</label>
-<div class="gen-container" id="gens"></div>
+<div class="generations" id="genArea"></div>
 
-<div id="bestEndless"></div>
-<div id="bestTA"></div>
+<button id="startBtn">ゲーム開始</button>
 
-<div id="message"></div>
-<button onclick="startGame()">ゲーム開始</button>
-
-<div id="game" class="hidden">
-  出題：<span id="question"></span><br>
-  ⏱ <span id="timer"></span><br>
-  正解数：<span id="score">0</span><br>
+<div id="gameArea" style="display:none;">
+  <div id="timer"></div>
+  <div id="question"></div>
   <input id="answer" autocomplete="off">
-  <button onclick="check()">判定</button>
-  <button onclick="giveUp()">ギブアップ</button>
+  <div id="message"></div>
 </div>
-</div>
+
+<div id="result"></div>
 
 <script>
-const gens = {
-  kanto:[1,151,"カントー"], johto:[152,251,"ジョウト"], hoenn:[252,386,"ホウエン"],
-  sinnoh:[387,493,"シンオウ"], unova:[494,649,"イッシュ"],
-  kalos:[650,721,"カロス"], alola:[722,809,"アローラ"],
-  galar:[810,906,"ガラル"], paldea:[907,1025,"パルデア"], all:[1,1025,"全て"]
-};
+/* ===== 世代定義 ===== */
+const generations = [
+  {key:"all", label:"全て", range:[1,1025]},
+  {key:"kanto", label:"カントー", range:[1,151]},
+  {key:"johto", label:"ジョウト", range:[152,251]},
+  {key:"hoenn", label:"ホウエン", range:[252,386]},
+  {key:"sinnoh", label:"シンオウ", range:[387,493]},
+  {key:"unova", label:"イッシュ", range:[494,649]},
+  {key:"kalos", label:"カロス", range:[650,721]},
+  {key:"alola", label:"アローラ+メルタン", range:[722,809]},
+  {key:"galar", label:"ガラル+ヒスイ", range:[810,906]},
+  {key:"paldea", label:"パルデア", range:[907,1025]}
+];
 
-let pokemon={}, numbers=[], pool=[], used=[];
-let timer=null,startTime=0,timeLeft=0,score=0,current=null;
+const genArea = document.getElementById("genArea");
 
-const rule=document.getElementById("rule");
-const mode=document.getElementById("mode");
-const timeSelect=document.getElementById("timeSelect");
-const gensDiv=document.getElementById("gens");
-const message=document.getElementById("message");
-const game=document.getElementById("game");
-
-fetch("pokemon.json").then(r=>r.json()).then(d=>{
-  pokemon=d;
-  numbers=Object.keys(d).map(Number);
+/* ===== チェックボックス生成 ===== */
+generations.forEach(g=>{
+  const div = document.createElement("div");
+  div.className = "gen-box";
+  div.innerHTML = `<span>${g.label}</span><input type="checkbox" id="gen-${g.key}">`;
+  genArea.appendChild(div);
 });
 
-Object.entries(gens).forEach(([k,v])=>{
-  gensDiv.innerHTML+=`<label>${v[2]}<input type="checkbox" value="${k}" ${k==="all"?"checked":""}></label>`;
+function resetGenerations(){
+  generations.forEach(g=>{
+    document.getElementById("gen-"+g.key).checked = (g.key==="all");
+  });
+}
+resetGenerations();
+
+/* ===== トグル挙動 ===== */
+genArea.addEventListener("change", e=>{
+  const rule = document.getElementById("rule").value;
+  if(e.target.tagName!=="INPUT") return;
+
+  const id = e.target.id.replace("gen-","");
+  const all = document.getElementById("gen-all");
+
+  if(rule==="endless"){
+    if(id==="all"){
+      const anyChecked = generations.some(g=>g.key!=="all" && document.getElementById("gen-"+g.key).checked);
+      generations.forEach(g=>{
+        document.getElementById("gen-"+g.key).checked = !anyChecked;
+      });
+    } else {
+      generations.forEach(g=>{
+        document.getElementById("gen-"+g.key).checked = false;
+      });
+      document.getElementById("gen-"+id).checked = true;
+    }
+  } else {
+    if(id!=="all") all.checked = false;
+    if(id==="all" && all.checked){
+      generations.forEach(g=>{
+        document.getElementById("gen-"+g.key).checked = true;
+      });
+    }
+  }
 });
 
-rule.onchange=()=>{
-  const ta=rule.value==="timeattack";
-  timeSelect.classList.toggle("hidden",ta);
-  document.getElementById("timeLabel").classList.toggle("hidden",ta);
-  updateRecords();
-};
+/* ===== モード切替時リセット ===== */
+document.getElementById("rule").addEventListener("change",()=>{
+  resetGenerations();
+});
 
-mode.onchange=timeSelect.onchange=updateRecords;
-gensDiv.onchange=e=>{
-  if(rule.value==="timeattack"){
-    gensDiv.querySelectorAll("input").forEach(c=>c.checked=false);
-    e.target.checked=true;
-  }
-  updateRecords();
-};
+/* ===== ゲーム本体 ===== */
+let pokemonList=[];
+let current;
+let score=0;
+let timerId;
+let startTime;
+let timeLeft;
 
-function selectedGen(){
-  return [...gensDiv.querySelectorAll("input")].find(c=>c.checked)?.value||"all";
+fetch("pokemon.json")
+.then(r=>r.json())
+.then(d=>pokemonList=d);
+
+function normalize(str){
+  return str.replace(/[ァ-ン]/g,s=>String.fromCharCode(s.charCodeAt(0)-0x60))
+            .replace(/[ゔ]/g,"う");
 }
 
-function keyTA(g){ return `ta_${mode.value}_${g}`; }
-function keyEnd(){ return `end_${mode.value}_${timeSelect.value}`; }
+document.getElementById("startBtn").onclick=()=>{
+  const rule=document.getElementById("rule").value;
+  score=0;
+  document.getElementById("result").innerHTML="";
+  document.getElementById("message").textContent="";
+  document.getElementById("gameArea").style.display="block";
+  document.getElementById("answer").value="";
+  document.getElementById("answer").focus();
 
-function updateRecords(){
-  document.getElementById("bestEndless").textContent="";
-  document.getElementById("bestTA").textContent="";
-  if(rule.value==="endless"){
-    const b=JSON.parse(localStorage.getItem(keyEnd())||"[0,0,0]");
-    document.getElementById("bestEndless").textContent=`最高記録：${b.join(" / ")}`;
-  }else{
-    Object.entries(gens).forEach(([k,v])=>{
-      const d=JSON.parse(localStorage.getItem(keyTA(k))||"null");
-      if(!d||!d.clear) return;
-      document.getElementById("bestTA").innerHTML+=
-        `<div class="record">${v[2]}${d.clear?"👑":""}<br>
-        正解数：${d.score}<br>タイム：${fmt(d.time)}<br>
-        ${d.clear>0?`クリア回数：${d.clear}`:""}</div>`;
-    });
-  }
-}
-
-function startGame(){
-  score=0; used=[];
-  pool=[];
-  const g=selectedGen();
-  for(let i=gens[g][0];i<=gens[g][1];i++) pool.push(i);
-  if(rule.value==="timeattack"){ startTime=Date.now(); }
-  else timeLeft=+timeSelect.value;
-  game.classList.remove("hidden");
-  message.textContent="";
-  next();
-}
-
-function next(){
-  if(rule.value==="timeattack" && pool.length===0){
-    end("クリア！");
-    return;
-  }
-  current = rule.value==="timeattack"
-    ? pool.splice(Math.floor(Math.random()*pool.length),1)[0]
-    : pool[Math.floor(Math.random()*pool.length)];
-  question.textContent = mode.value==="num2poke"?current:pokemon[current];
-  answer.value="";
-  answer.focus({preventScroll:true});
-  clearInterval(timer);
-  if(rule.value==="endless" && timeLeft>0){
-    timer=setInterval(()=>{
+  if(rule==="time"){
+    timeLeft=Number(document.getElementById("timeLimit").value);
+    document.getElementById("timer").textContent="残り時間："+timeLeft+"秒";
+    timerId=setInterval(()=>{
       timeLeft--;
-      timerEl.textContent=timeLeft;
-      if(timeLeft<=0) end("時間切れ！");
+      document.getElementById("timer").textContent="残り時間："+timeLeft+"秒";
+      if(timeLeft<=0) endGame(true);
+    },1000);
+  } else {
+    startTime=Date.now();
+    timerId=setInterval(()=>{
+      const t=Math.floor((Date.now()-startTime)/1000);
+      document.getElementById("timer").textContent="経過時間："+t+"秒";
     },1000);
   }
-}
+  next();
+};
 
-function check(){
-  clearInterval(timer);
-  const a=answer.value.trim();
-  const c=mode.value==="num2poke"?pokemon[current]:String(current);
-  if(a===c){ score++; scoreEl.textContent=score; next(); }
-  else end("不正解！");
-}
-
-function giveUp(){ end("ギブアップ！"); }
-
-function end(r){
-  clearInterval(timer);
-  let msg=r+"\nスコア："+score;
-  if(rule.value==="timeattack"){
-    const t=(Date.now()-startTime)/1000;
-    msg+="\nタイム："+fmt(t);
+function next(){
+  const ranges=[];
+  generations.forEach(g=>{
+    if(document.getElementById("gen-"+g.key).checked && g.key!=="all"){
+      ranges.push(g.range);
+    }
+  });
+  if(ranges.length===0){
+    current=pokemonList[Math.floor(Math.random()*pokemonList.length)];
+  } else {
+    const pool=pokemonList.filter(p=>
+      ranges.some(r=>p.number>=r[0]&&p.number<=r[1])
+    );
+    current=pool[Math.floor(Math.random()*pool.length)];
   }
-  message.textContent=msg;
-  game.classList.add("hidden");
-  updateRecords();
+
+  const mode=document.getElementById("mode").value;
+  document.getElementById("question").textContent =
+    mode==="name" ? current.number+"番は？" : current.name+" の番号は？";
 }
 
-function fmt(s){
-  const m=Math.floor(s/60);
-  const sec=Math.floor(s%60);
-  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
-}
+document.getElementById("answer").addEventListener("keydown",e=>{
+  if(e.key!=="Enter") return;
+  const mode=document.getElementById("mode").value;
+  const input=e.target.value.trim();
+  if(!input) return;
 
-updateRecords();
+  const ok =
+    mode==="name"
+    ? normalize(input)===normalize(current.name)
+    : Number(input)===current.number;
+
+  if(ok){
+    score++;
+    document.getElementById("message").textContent="正解！";
+    e.target.value="";
+    next();
+  } else {
+    endGame(false);
+  }
+});
+
+function endGame(timeup){
+  clearInterval(timerId);
+  document.getElementById("gameArea").style.display="none";
+  document.getElementById("result").innerHTML=
+    (timeup?"時間切れ":"不正解")+"<br>答えは「"+current.name+"」<br>スコア："+score;
+}
 </script>
+
 </body>
 </html>
