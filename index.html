@@ -148,6 +148,7 @@ let isNewRecord = false; // NEW RECORD判定用
 
 function saveAttackData(key, data){
   const safe = {
+    version: DATA_VERSION,
     score: Math.max(0, Number(data.score) || 0),
     time: Math.max(0, Number(data.time) || 0),
     clears: Math.max(0, Number(data.clears) || 0)
@@ -156,6 +157,27 @@ function saveAttackData(key, data){
   localStorage.setItem(key, JSON.stringify(safe));
 }
 
+  function loadAttackData(key){
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return { score: 0, time: 0, clears: 0 };
+
+    const d = JSON.parse(raw);
+
+    return {
+      score: Number(d.score) || 0,
+      time: Number(d.time) || 0,
+      clears: Number(d.clears) || 0
+    };
+  } catch {
+    return { score: 0, time: 0, clears: 0 };
+  }
+}
+
+// ====== 定数 ======
+const DATA_VERSION = 1;
+
+// ====== DOM参照 ======
 const answer = document.getElementById("answer");
 const timeSelect = document.getElementById("timeSelect");
 const bestContainer = document.getElementById("bestContainer");
@@ -216,6 +238,32 @@ const genRanges = {
   kanto:[1,151], johto:[152,251], hoenn:[252,386], sinnoh:[387,493],
   unova:[494,649], kalos:[650,721], alola:[722,809], galar:[810,905], paldea:[906,1025]
 };
+
+  // 全世代クリア判定（タイムアタック・モード別）
+  function isAllGenClearedForMode(mode){
+  // 現在の全世代数を計算（将来追加対応）
+  let totalMax = 0;
+  Object.values(genRanges).forEach(([s, e]) => {
+    totalMax += (e - s + 1);
+  });
+
+  // 「全て」でのタイムアタック記録だけを見る
+  const key = `pokemon_attack_${mode}_全て`;
+  const data = loadAttackData(key);
+
+  return (
+    data.clears > 0 &&
+    data.score === totalMax
+  );
+}
+
+  // ★ タイムアタック完全制覇判定（全モード）
+function isTimeAttackMaster(){
+  const modes = ["num2poke", "poke2num"];
+
+  return modes.every(mode => isAllGenClearedForMode(mode));
+}
+  
   function getSelectedGenInfo(){
   const checked = [...genCheckboxes].filter(c => c.checked && c.value !== "all");
 
@@ -283,10 +331,62 @@ function attackKey(){
 fetch("pokemon.json").then(r=>r.json()).then(data=>{
   pokemon=data;
   numbers=Object.keys(pokemon).map(Number);
+
+  // ===== タイムアタック「全て」自動リセット処理（世代追加対応） =====
+function resetAllTimeAttackIfGenAdded() {
+  try {
+    // 前回保存されていた世代数情報を取得
+    const infoRaw = localStorage.getItem("pokemon_data_info");
+    const info = infoRaw ? JSON.parse(infoRaw) : {};
+
+    const prevGenCount = info.genCount || 0;
+    const currentGenCount = Object.keys(genRanges).length;
+
+    // 世代が増えた場合のみ
+    if (currentGenCount > prevGenCount) {
+      console.log("世代追加検出 → タイムアタック『全て』をリセット");
+
+      ["num2poke", "poke2num"].forEach(mode => {
+        const key = `pokemon_attack_${mode}_全て`;
+        localStorage.removeItem(key);
+      });
+
+      // 現在の世代数を保存
+      info.genCount = currentGenCount;
+      localStorage.setItem("pokemon_data_info", JSON.stringify(info));
+    }
+  } catch (e) {
+    console.error("タイムアタック『全て』リセットでエラー:", e);
+  }
+}
+  
   updateBest();
 }).catch(()=>alert("pokemon.json の読み込みに失敗しました"));
 
 function updateBest(){
+
+  // ===== モード👑表示更新 =====
+[...modeSelect.options].forEach(opt => {
+  const baseText =
+    opt.value === "num2poke"
+      ? "番号→ポケモン"
+      : "ポケモン→番号";
+
+  const crowned = isAllGenClearedForMode(opt.value);
+
+  opt.textContent = baseText + (crowned ? " 👑" : "");
+});
+
+  // ===== ルール👑表示更新 =====
+  [...ruleSelect.options].forEach(opt => {
+    if (opt.value === "timeattack") {
+      opt.textContent =
+        "タイムアタック" + (isTimeAttackMaster() ? " 👑" : "");
+    }
+    else {
+      opt.textContent = "エンドレス";
+    }
+  });
   
   const rule = ruleSelect.value;
   
@@ -368,6 +468,17 @@ genCheckboxes.forEach(cb => cb.addEventListener("change", () => {
       allCb.checked = false;
     }
   }
+
+// ★ 個別世代がすべてONなら「全て」もONにする
+if (ruleSelect.value === "endless") {
+  const allCb = [...genCheckboxes].find(c => c.value === "all");
+  const others = [...genCheckboxes].filter(c => c.value !== "all");
+
+  const allCheckedNow = others.every(c => c.checked);
+  if (allCheckedNow) {
+    allCb.checked = true;
+  }
+}
 
   // タイムアタック
   else {
@@ -559,13 +670,14 @@ else {
   }
 }
 
- // ★ エンドレス ＆ 全て選択 ＆ ゲームオーバー時のみ表示
+  // ★ エンドレス ＆ 全て選択 ＆ ゲームオーバー時のみ表示
 if (
   ruleSelect.value === "endless" &&
   allChecked
 ) {
   msg += "\n最高記録：" + bests.join(" / ");
 }
+
   messageDiv.textContent = msg;
   updateBest();
   document.getElementById("game").classList.add("hidden");
