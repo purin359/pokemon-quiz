@@ -23,13 +23,13 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
 <div class="container">
 <h1>ポケモン図鑑番号検定</h1>
 
-<label>モード選択</label>
+<label>　モード選択</label>
 <select id="modeSelect">
   <option value="num2poke" selected>番号→ポケモン</option>
   <option value="poke2num">ポケモン→番号</option>
 </select>
 
-<label>ルール選択</label>
+<label>　ルール選択</label>
 <select id="ruleSelect">
   <option value="endless" selected>エンドレス</option>
   <option value="timeattack">タイムアタック</option>
@@ -138,7 +138,7 @@ let numbers = [];
 let currentNumber = null;
 let timer = null;
 let timeLeft = 0;
-let limit = 30;
+let limit = 5;
 let score = 0;
 let elapsed = 0;
 let attackTimer = null;
@@ -699,6 +699,7 @@ if (
 </script>
 </body>
 </html>
+
 
 
 
