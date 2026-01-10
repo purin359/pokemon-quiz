@@ -567,7 +567,15 @@ function nextQuestion(){
       ? currentNumber
       : pokemon[currentNumber];
 
-  document.getElementById("number").style.color = "blue";
+ const numberEl = document.getElementById("number");
+
+if (modeSelect.value === "num2poke") {
+  // 番号 → ポケモン のときだけ青
+  numberEl.style.color = "blue";
+} else {
+  // ポケモン → 番号 は黒
+  numberEl.style.color = "black";
+}
 
   answer.value="";
   answer.focus();
@@ -701,6 +709,7 @@ if (
 </script>
 </body>
 </html>
+
 
 
 
