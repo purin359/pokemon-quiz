@@ -397,7 +397,7 @@ function updateBest(){
   if(data.clears>0){
     body += `
 タイム：${formatHMS_Result(data.time)}
-平均回答時間：約${formatHMS_Result(Math.round(data.avgTime))} /問
+平均回答時間：${data.avgTime.toFixed(2)}秒
 クリア回数：${data.clears}`;
   }
 
@@ -575,70 +575,73 @@ function gameOver(reason){
 
   const {allChecked} = getSelectedNumbers();
 /* ===== タイムアタック記録 ===== */
+// タイムアタック記録
 if (ruleSelect.value === "timeattack") {
   const key = attackKey();
   const prev = loadAttackData(key);
-  const cleared = reason === "🎉 全問クリア！";
 
+  const cleared = reason === "🎉 全問クリア！";
   const newScore = Math.max(prev.score, score);
 
-  // 平均回答時間（秒）
-  let avgTime = prev.avgTime || 0;
-  if (score > 0) avgTime = elapsed / score;
-
   let newTime = prev.time;
-  let newClears = prev.clears + (cleared ? 1 : 0);
-
-  isNewRecord = false;
-  if (cleared && (prev.time === 0 || elapsed < prev.time)) {
-    newTime = elapsed;
-    isNewRecord = true;
+  if (cleared) {
+    if (prev.time === 0 || elapsed < prev.time) {
+      newTime = elapsed;
+      isNewRecord = true;
+    }
   }
+
+  const newClears = prev.clears + (cleared ? 1 : 0);
+
+  // 平均回答時間を追加
+  const newAvgTime = score > 0 ? elapsed / score : 0;
 
   saveAttackData(key, {
     score: newScore,
     time: newTime,
     clears: newClears,
-    avgTime: avgTime
+    avgTime: newAvgTime
   });
 }
+
 
   /* ===== 表示処理 ===== */
 const correctAnswer = modeSelect.value==="num2poke"
   ? pokemon[currentNumber]
   : currentNumber;
 
+// リザルト
 let msg = "";
+const correctAnswer = modeSelect.value==="num2poke" ? pokemon[currentNumber] : currentNumber;
 
-if (reason === "🎉 全問クリア！") {
+if(reason === "🎉 全問クリア！"){
   const info = getSelectedGenInfo();
   const masterName = info.name === "全て" ? "図鑑番号" : info.name;
 
-  msg =
-`クリア！おめでとう！
+  // 平均回答時間を計算（秒、小数第2位）
+  const avgTime = score > 0 ? (elapsed / score).toFixed(2) : "0.00";
+
+  msg = `クリア！おめでとう！
 あなたは${masterName}マスター！
-クリアタイム：${formatHMS_Result(elapsed)}`;
+クリアタイム：${formatHMS_Result(elapsed)}
+平均回答時間：約${avgTime}秒/問`;
 
-// 平均回答時間
-const avgTime = score ? (elapsed / score).toFixed(2) : "0.00";
-msg += `\n平均回答時間：${avgTime}秒`;
+  if(isNewRecord){
+    msg += "\n🎉 NEW RECORD！";
+  }
+} else {
+  // 不正解／時間切れ
+  const avgTime = score > 0 ? (elapsed / score).toFixed(2) : "0.00";
 
-// NEW RECORD 表示
-if (isNewRecord) {
-  msg += "\n🎉 NEW RECORD！";
-}
-}
-else {
-  msg = reason + "\nスコア：" + score +
-        "\n答えは「" + correctAnswer + "」";
+  msg = reason + `\nスコア：${score}` +
+        `\n答えは「${correctAnswer}」`;
 
-  if (ruleSelect.value === "timeattack") {
-    msg += "\nタイム：" + formatHMS_Result(elapsed);
-    // 平均回答時間
-    const avgTime = score ? (elapsed / score).toFixed(2) : "0.00";
-    msg += `\n平均回答時間：${avgTime}秒`;
+  if(ruleSelect.value === "timeattack"){
+    msg += `\nタイム：${formatHMS_Result(elapsed)}` +
+           `\n平均回答時間：約${avgTime}秒/問`;
   }
 }
+
 
 
   // ★ エンドレス ＆ 全て選択 ＆ ゲームオーバー時のみ表示
@@ -670,5 +673,3 @@ if (
 </script>
 </body>
 </html>
-
-
