@@ -117,22 +117,6 @@ select, input, button { width:100%; font-size:1.1em; padding:10px; margin:8px 0;
   return `${h}時間${String(m).padStart(2,"0")}分${String(s).padStart(2,"0")}秒`;
   }
 
-function loadAttackData(key){
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return { score: 0, time: 0, clears: 0 };
-
-    const d = JSON.parse(raw);
-    return {
-      score: Number(d.score) || 0,
-      time: Number(d.time) || 0,
-      clears: Number(d.clears) || 0
-    };
-  } catch (e) {
-    // 壊れていたら初期化
-    return { score: 0, time: 0, clears: 0 };
-  }
-}
 
 let pokemon = {};
 let numbers = [];
@@ -333,36 +317,34 @@ fetch("pokemon.json").then(r=>r.json()).then(data=>{
   pokemon=data;
   numbers=Object.keys(pokemon).map(Number);
 
-  // ===== タイムアタック「全て」自動リセット処理（世代追加対応） =====
-function resetAllTimeAttackIfGenAdded() {
-  try {
-    // 前回保存されていた世代数情報を取得
-    const infoRaw = localStorage.getItem("pokemon_data_info");
-    const info = infoRaw ? JSON.parse(infoRaw) : {};
+  function resetAllTimeAttackIfGenAdded() {
+    try {
+      const infoRaw = localStorage.getItem("pokemon_data_info");
+      const info = infoRaw ? JSON.parse(infoRaw) : {};
 
-    const prevGenCount = info.genCount || 0;
-    const currentGenCount = Object.keys(genRanges).length;
+      const prevGenCount = info.genCount || 0;
+      const currentGenCount = Object.keys(genRanges).length;
 
-    // 世代が増えた場合のみ
-    if (currentGenCount > prevGenCount) {
-      console.log("世代追加検出 → タイムアタック『全て』をリセット");
+      if (currentGenCount > prevGenCount) {
+        ["num2poke", "poke2num"].forEach(mode => {
+          const key = `pokemon_attack_${mode}_全て`;
+          localStorage.removeItem(key);
+        });
 
-      ["num2poke", "poke2num"].forEach(mode => {
-        const key = `pokemon_attack_${mode}_全て`;
-        localStorage.removeItem(key);
-      });
-
-      // 現在の世代数を保存
-      info.genCount = currentGenCount;
-      localStorage.setItem("pokemon_data_info", JSON.stringify(info));
+        info.genCount = currentGenCount;
+        localStorage.setItem("pokemon_data_info", JSON.stringify(info));
+      }
+    } catch (e) {
+      console.error(e);
     }
-  } catch (e) {
-    console.error("タイムアタック『全て』リセットでエラー:", e);
   }
-}
-  
+
+  // ★ これを追加 ★
+  resetAllTimeAttackIfGenAdded();
+
   updateBest();
 }).catch(()=>alert("pokemon.json の読み込みに失敗しました"));
+
 
 function updateBest(){
 
@@ -390,54 +372,42 @@ function updateBest(){
   });
   
   const rule = ruleSelect.value;
-  
+  const info = getSelectedGenInfo();
   const {allChecked} = getSelectedNumbers();
 
-// エンドレスは「全て」以外非表示
-if (ruleSelect.value === "endless" && !allChecked) {
-  bestContainer.style.display = "none";
-  return;
-}
+  // ----- エンドレス -----
+  if (rule === "endless") {
 
-// タイムアタックは常に表示
-bestContainer.style.display = "block";
-  
-  // ===== エンドレス =====
-  if (ruleSelect.value === "endless") {
+    // 「全て」でない場合は非表示
+    if (!allChecked) {
+      bestContainer.style.display = "none";
+      return;
+    }
+
+    bestContainer.style.display = "block";
     document.getElementById("bestTitle").textContent =
-      "この時間の最高記録（1位～3位）";
+      `この時間の最高記録（${limit}秒）`;
 
-    const bests = JSON.parse(localStorage.getItem(bestKey())||"[0,0,0]");
-    document.getElementById("bestBody").textContent =
-      bests.join(" / ");
+    // エンドレスは制限時間ごとに別キーを参照
+    const key = bestKey();
+    const bests = JSON.parse(localStorage.getItem(key) || "[0,0,0]");
+    document.getElementById("bestBody").textContent = bests.join(" / ");
     return;
   }
 
-  // ===== タイムアタック =====
-  const info = getSelectedGenInfo();
-
-  // タイムアタックのリザルト表示
+  // ----- タイムアタック -----
+  bestContainer.style.display = "block";
   const key = attackKey();
-  // 読み込み（回復）
   const data = loadAttackData(key);
-
-  // 👑はクリア済みのみ
-  const crown = data.clears > 0 ? " 👑" :"";
+  const crown = data.clears > 0 ? " 👑" : "";
   document.getElementById("bestTitle").textContent =
     `${info.name}の最高記録${crown}`;
 
-  // 表示本文を組み立てる
   let body = `スコア：${data.score}/${info.max}`;
-
-  // 1回以上クリアしている場合のみ追加
   if (data.clears > 0) {
-    body += `
-    タイム：${formatHMS_Result(data.time)}
-    クリア回数：${data.clears}`;
     const avgTime = data.score ? (data.time / data.score).toFixed(2) : "0.00";
-    body += `\n平均回答時間：${avgTime}秒`;
+    body += `\nタイム：${formatHMS_Result(data.time)}\n平均回答時間：${avgTime}秒\nクリア回数：${data.clears}`;
   }
-
   document.getElementById("bestBody").innerText = body;
 }
 
@@ -720,4 +690,3 @@ if (
 </script>
 </body>
 </html>
-
