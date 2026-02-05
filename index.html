@@ -431,10 +431,15 @@ bestContainer.style.display = "block";
 
   // 1回以上クリアしている場合のみ追加
   if (data.clears > 0) {
-    body += `
-    タイム：${formatHMS_Result(data.time)}
-    クリア回数：${data.clears}`;
-  }
+  body += `
+  タイム：${formatHMS_Result(data.time)}
+  クリア回数：${data.clears}`;
+
+  // 平均回答時間（秒）
+  const avgTime = data.score ? (data.time / data.score).toFixed(2) : "0.00";
+  body += `\n平均回答時間：${avgTime}秒`;
+}
+
 
   document.getElementById("bestBody").innerText = body;
 }
@@ -667,10 +672,14 @@ if (reason === "🎉 全問クリア！") {
 あなたは${masterName}マスター！
 クリアタイム：${formatHMS_Result(elapsed)}`;
 
-  // NEW RECORD 表示
-  if (isNewRecord) {
-    msg += "\n🎉 NEW RECORD！";
-  }
+// 平均回答時間
+const avgTime = score ? (elapsed / score).toFixed(2) : "0.00";
+msg += `\n平均回答時間：${avgTime}秒`;
+
+// NEW RECORD 表示
+if (isNewRecord) {
+  msg += "\n🎉 NEW RECORD！";
+}
 }
 else {
   msg = reason + "\nスコア：" + score +
@@ -678,8 +687,12 @@ else {
 
   if (ruleSelect.value === "timeattack") {
     msg += "\nタイム：" + formatHMS_Result(elapsed);
+    // 平均回答時間
+    const avgTime = score ? (elapsed / score).toFixed(2) : "0.00";
+    msg += `\n平均回答時間：${avgTime}秒`;
   }
 }
+
 
   // ★ エンドレス ＆ 全て選択 ＆ ゲームオーバー時のみ表示
 if (
@@ -710,15 +723,3 @@ if (
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
