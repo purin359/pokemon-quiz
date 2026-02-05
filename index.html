@@ -159,23 +159,6 @@ function saveAttackData(key, data){
   localStorage.setItem(key, JSON.stringify(safe));
 }
 
-  function loadAttackData(key){
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return { score: 0, time: 0, clears: 0 };
-
-    const d = JSON.parse(raw);
-
-    return {
-      score: Number(d.score) || 0,
-      time: Number(d.time) || 0,
-      clears: Number(d.clears) || 0
-    };
-  } catch {
-    return { score: 0, time: 0, clears: 0 };
-  }
-}
-
 // ====== 定数 ======
 const DATA_VERSION = 1;
 
@@ -385,7 +368,7 @@ document.getElementById("bestTitle").textContent = `${info.name}の最高記録$
 let body = `スコア：${data.score}/${info.max}`;
 if (data.clears > 0 && data.score > 0) {
   // 最高記録ベースで平均回答時間を算出
-  const avgTime = data.time / data.score;
+  const avgTime = data.score > 0 ? data.time / data.score : 0;
   body += `\nタイム：${formatHMS_Result(data.time)}
   \n平均回答時間：${avgTime.toFixed(2)}秒
   \nクリア回数：${data.clears}`;
@@ -604,6 +587,7 @@ saveAttackData(key, {
   score: newScore,
   time: newTime,
   clears: newClears,
+  avgTime: newAvgTime
 });
 }
 
@@ -676,6 +660,3 @@ if (
 </script>
 </body>
 </html>
-
-
-
