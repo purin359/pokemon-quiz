@@ -386,7 +386,9 @@ let body = `スコア：${data.score}/${info.max}`;
 if (data.clears > 0 && data.score > 0) {
   // 最高記録ベースで平均回答時間を算出
   const avgTime = data.time / data.score;
-  body += `\nタイム：${formatHMS_Result(data.time)}\n平均回答時間：${avgTime.toFixed(2)}秒\nクリア回数：${data.clears}`;
+  body += `\nタイム：${formatHMS_Result(data.time)}
+  \n平均回答時間：${avgTime.toFixed(2)}秒
+  \nクリア回数：${data.clears}`;
 }
 
 document.getElementById("bestBody").innerText = body;
@@ -602,7 +604,6 @@ saveAttackData(key, {
   score: newScore,
   time: newTime,
   clears: newClears,
-  avgTime: newAvgTime
 });
 }
 
@@ -675,5 +676,6 @@ if (
 </script>
 </body>
 </html>
+
 
 
