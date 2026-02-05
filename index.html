@@ -322,11 +322,11 @@ function getSelectedNumbers(){
 
 function bestKey(){ 
   const info = getSelectedGenInfo();
-  return `pokemon_best_${modeSelect.value}_${limit}_${info.name}`;
+  return `pokemon_best_${ruleSelect.value}_${modeSelect.value}_${limit}_${info.name}`;
 }
 function attackKey(){
   const info = getSelectedGenInfo();
-  return `pokemon_attack_${modeSelect.value}_${info.name}`;
+  return `pokemon_attack_${ruleSelect.value}_${modeSelect.value}_${info.name}`;
 }
 
 // JSON読み込み
@@ -669,4 +669,5 @@ if (
 </script>
 </body>
 </html>
+
 
