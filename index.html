@@ -589,15 +589,20 @@ if (ruleSelect.value === "timeattack") {
 
   const newClears = prev.clears + (cleared ? 1 : 0);
 
-  // 平均回答時間を追加
-  const newAvgTime = score > 0 ? elapsed / score : 0;
+ // 平均回答時間（秒、小数第2位）
+let newAvgTime = prev.avgTime || 0;
 
-  saveAttackData(key, {
-    score: newScore,
-    time: newTime,
-    clears: newClears,
-    avgTime: newAvgTime
-  });
+// クリアした場合にのみ更新
+if (cleared && score > 0) {
+  newAvgTime = +(elapsed / score).toFixed(2);
+}
+
+saveAttackData(key, {
+  score: newScore,
+  time: newTime,
+  clears: newClears,
+  avgTime: newAvgTime
+});
 }
 
 
@@ -615,22 +620,27 @@ if(reason === "🎉 全問クリア！"){
   msg = `クリア！おめでとう！
 あなたは${masterName}マスター！
 クリアタイム：${formatHMS_Result(elapsed)}
-平均回答時間：約${avgTime}秒/問`;
+平均回答時間：${avgTime}秒`;
 
   if(isNewRecord){
     msg += "\n🎉 NEW RECORD！";
   }
 } else {
   // 不正解／時間切れ
-  const avgTime = score > 0 ? (elapsed / score).toFixed(2) : "0.00";
+  let avgTime = 0;
+if (ruleSelect.value === "timeattack") {
+  const key = attackKey();
+  const data = loadAttackData(key);
+  avgTime = data.avgTime || 0;
+}
 
-  msg = reason + `\nスコア：${score}` +
-        `\n答えは「${correctAnswer}」`;
+msg = reason + `\nスコア：${score}` +
+      `\n答えは「${correctAnswer}」`;
 
-  if(ruleSelect.value === "timeattack"){
-    msg += `\nタイム：${formatHMS_Result(elapsed)}` +
-           `\n平均回答時間：約${avgTime}秒/問`;
-  }
+if (ruleSelect.value === "timeattack") {
+  msg += `\nタイム：${formatHMS_Result(elapsed)}` +
+         `\n平均回答時間：${avgTime}秒`;
+}
 }
 
 
@@ -664,3 +674,4 @@ if (
 </script>
 </body>
 </html>
+
