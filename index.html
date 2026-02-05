@@ -124,10 +124,12 @@ function loadAttackData(key){
 
     const d = JSON.parse(raw);
     return {
-      score: Number(d.score) || 0,
-      time: Number(d.time) || 0,
-      clears: Number(d.clears) || 0
-    };
+    score: Number(d.score) || 0,
+    time: Number(d.time) || 0,
+    clears: Number(d.clears) || 0,
+    avgTime: Number(d.avgTime || 0)
+  };
+
   } catch (e) {
     // 壊れていたら初期化
     return { score: 0, time: 0, clears: 0 };
@@ -154,7 +156,6 @@ function saveAttackData(key, data){
     time: Math.max(0, Number(data.time) || 0),
     clears: Math.max(0, Number(data.clears) || 0)
   };
-
   localStorage.setItem(key, JSON.stringify(safe));
 }
 
@@ -605,12 +606,7 @@ if (ruleSelect.value === "timeattack") {
 }
 
 
-  /* ===== 表示処理 ===== */
-const correctAnswer = modeSelect.value==="num2poke"
-  ? pokemon[currentNumber]
-  : currentNumber;
-
-// リザルト
+/* ===== 表示処理 ===== */
 let msg = "";
 const correctAnswer = modeSelect.value==="num2poke" ? pokemon[currentNumber] : currentNumber;
 
@@ -673,3 +669,4 @@ if (
 </script>
 </body>
 </html>
+
