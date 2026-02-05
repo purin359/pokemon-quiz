@@ -374,23 +374,24 @@ function updateBest() {
 
   // タイムアタック
   if (ruleSelect.value === "timeattack") {
-    const key = attackKey();      // ←毎回 info.name を含める
-    const data = loadAttackData(key);
+    // タイムアタックの場合
+const key = attackKey();  
+const data = loadAttackData(key);
 
-    let crown = data.clears > 0 ? " 👑" : "";
-    document.getElementById("bestTitle").textContent = `${info.name}の最高記録${crown}`;
+const info = getSelectedGenInfo();
+const crown = data.clears > 0 ? " 👑" : "";
+document.getElementById("bestTitle").textContent = `${info.name}の最高記録${crown}`;
 
-    let body = `スコア：${data.score}/${info.max}`;
-    if (data.clears > 0) {
-      const avg = data.avgTime ? data.avgTime.toFixed(2) : "0.00";
-      body += `
-タイム：${formatHMS_Result(data.time)}
-平均回答時間：${avg}秒
-クリア回数：${data.clears}`;
-    }
-    document.getElementById("bestBody").innerText = body;
-    bestContainer.style.display = "block";
-  }
+let body = `スコア：${data.score}/${info.max}`;
+if (data.clears > 0 && data.score > 0) {
+  // 最高記録ベースで平均回答時間を算出
+  const avgTime = data.time / data.score;
+  body += `\nタイム：${formatHMS_Result(data.time)}\n平均回答時間：${avgTime.toFixed(2)}秒\nクリア回数：${data.clears}`;
+}
+
+document.getElementById("bestBody").innerText = body;
+bestContainer.style.display = "block";
+
 
   // エンドレス
   else {
@@ -674,4 +675,5 @@ if (
 </script>
 </body>
 </html>
+
 
