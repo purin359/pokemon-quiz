@@ -636,8 +636,10 @@ if (
   ruleSelect.value === "endless" &&
   allChecked
 ) {
+  const bests = JSON.parse(localStorage.getItem(bestKey())||"[0,0,0]");
   msg += "\n最高記録：" + bests.join(" / ");
 }
+
 
   messageDiv.textContent = msg;
   updateBest();
