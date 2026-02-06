@@ -315,8 +315,11 @@ function bestKey(){
 }
 function attackKey(){
   const info = getSelectedGenInfo();
-  return `pokemon_attack_${modeSelect.value}_${info.name}`;
+
+  // ★ タイムアタック専用キーにする
+  return `pokemon_attack_time_${modeSelect.value}_${info.name}`;
 }
+
 
 // JSON読み込み
 fetch("pokemon.json").then(r=>r.json()).then(data=>{
@@ -345,46 +348,21 @@ fetch("pokemon.json").then(r=>r.json()).then(data=>{
     }
   }
 
-  // ★ これを追加 ★
   resetAllTimeAttackIfGenAdded();
 
   updateBest();
 }).catch(()=>alert("pokemon.json の読み込みに失敗しました"));
 
 
-function updateBest(){
-
-  // ===== モード👑表示更新 =====
-[...modeSelect.options].forEach(opt => {
-  const baseText =
-    opt.value === "num2poke"
-      ? "番号→ポケモン"
-      : "ポケモン→番号";
-
-  const crowned = isAllGenClearedForMode(opt.value);
-
-  opt.textContent = baseText + (crowned ? " 👑" : "");
-});
-
-  // ===== ルール👑表示更新 =====
-  [...ruleSelect.options].forEach(opt => {
-    if (opt.value === "timeattack") {
-      opt.textContent =
-        "タイムアタック" + (isTimeAttackMaster() ? " 👑" : "");
-    }
-    else {
-      opt.textContent = "エンドレス";
-    }
-  });
-  
+function updateBest() {
   const rule = ruleSelect.value;
-  const info = getSelectedGenInfo();
-  const {allChecked} = getSelectedNumbers();
+  const { allChecked } = getSelectedNumbers();
 
-  // ----- エンドレス -----
+  // =========================
+  // エンドレス
+  // =========================
   if (rule === "endless") {
 
-    // 「全て」でない場合は非表示
     if (!allChecked) {
       bestContainer.style.display = "none";
       return;
@@ -392,28 +370,47 @@ function updateBest(){
 
     bestContainer.style.display = "block";
     document.getElementById("bestTitle").textContent =
-      `この時間の最高記録（${limit}秒）`;
+      `エンドレス ${limit}秒 の最高記録`;
 
-    // エンドレスは制限時間ごとに別キーを参照
-    const key = bestKey();
-    const bests = JSON.parse(localStorage.getItem(key) || "[0,0,0]");
-    document.getElementById("bestBody").textContent = bests.join(" / ");
+    const bests = JSON.parse(
+      localStorage.getItem(bestKey()) || "[0,0,0]"
+    );
+
+    document.getElementById("bestBody").innerText =
+      bests.join(" / ");
+
     return;
   }
 
-  // ----- タイムアタック -----
+  // =========================
+  // タイムアタック
+  // =========================
   bestContainer.style.display = "block";
+
+  const info = getSelectedGenInfo();
   const key = attackKey();
   const data = loadAttackData(key);
-  const crown = data.clears > 0 ? " 👑" : "";
-  document.getElementById("bestTitle").textContent =
-    `${info.name}の最高記録${crown}`;
 
-  let body = `スコア：${data.score}/${info.max}`;
+  const crown = data.clears > 0 ? " 👑" : "";
+
+  document.getElementById("bestTitle").textContent =
+    `${info.name} の最高記録${crown}`;
+
+  let body =
+    `スコア：${data.score}/${info.max}`;
+
   if (data.clears > 0) {
-    const avgTime = data.score ? (data.time / data.score).toFixed(2) : "0.00";
-    body += `\nタイム：${formatHMS_Result(data.time)}\n平均回答時間：${avgTime}秒\nクリア回数：${data.clears}`;
+    const avg =
+      data.score > 0
+        ? (data.time / data.score).toFixed(2)
+        : "0.00";
+
+    body +=
+      `\nタイム：${formatHMS_Result(data.time)}` +
+      `\n平均回答時間：${avg}秒` +
+      `\nクリア回数：${data.clears}`;
   }
+
   document.getElementById("bestBody").innerText = body;
 }
 
@@ -587,7 +584,7 @@ function gameOver(reason){
   const {allChecked} = getSelectedNumbers();
 /* ===== エンドレス最高記録 ===== */
   let bests=[0,0,0];
-  if(allChecked){
+  if (ruleSelect.value === "endless" && allChecked) {
     bests = JSON.parse(localStorage.getItem(bestKey())||"[0,0,0]");
     if(score>bests[0]){bests=[score,bests[0],bests[1]];}
     else if(score>bests[1]){bests=[bests[0],score,bests[1]];}
